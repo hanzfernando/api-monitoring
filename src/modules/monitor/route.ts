@@ -13,9 +13,9 @@ export class MonitorRoutes {
   }
 
   private initializeRoutes(): void {
-    this.router.get("/", protect, this.controller.list.bind(this.controller));
-    this.router.get("/:id", protect, this.controller.get.bind(this.controller));
-    this.router.delete("/:id", protect, this.controller.remove.bind(this.controller));
+    this.router.get("/", this.controller.list.bind(this.controller));
+    this.router.get("/:id", this.controller.get.bind(this.controller));
+    this.router.delete("/:id", this.controller.remove.bind(this.controller));
   }
 
   public getRouter() {

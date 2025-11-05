@@ -63,8 +63,12 @@ export class App {
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
     // Register monitor middleware to record incoming requests and responses
-    if (this.monitorContainer && this.monitorContainer.middleware) {
-      this.app.use(this.monitorContainer.middleware);
+    // if (this.monitorContainer && this.monitorContainer.middleware) {
+    //   this.app.use(this.monitorContainer.middleware);
+    // }
+
+    if(this.monitorContainer && this.monitorContainer.apiKeyMiddleware) {
+      this.app.use(this.monitorContainer.apiKeyMiddleware);
     }
 
     this.app.set("trust proxy", 1);

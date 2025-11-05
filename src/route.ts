@@ -4,6 +4,7 @@ import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
 import { MonitorContainer } from "./modules/monitor/container";
 import { ApiKeyContainer } from "./modules/apiKey/container";
+import { eitherAuth } from "./core/middlewares/compositeAuth.middleware";
 
 export class AppRoutes {
   private router: Router;
@@ -30,12 +31,12 @@ export class AppRoutes {
 
   public initializeRoutes(): void {
     this.router.use("/auth", this.authRoutes.routes.getRouter());
-    this.router.use("/stations", this.stationRoutes.routes.getRouter());
+    this.router.use("/stations", eitherAuth, this.stationRoutes.routes.getRouter());
     if (this.monitorRoutes) {
-      this.router.use("/monitor", this.monitorRoutes.routes.getRouter());
+      this.router.use("/monitor", eitherAuth, this.monitorRoutes.routes.getRouter());
     }
     if (this.apiKeyRoutes) {
-      this.router.use("/api-keys", this.apiKeyRoutes.routes.getRouter());
+      this.router.use("/api-keys", eitherAuth, this.apiKeyRoutes.routes.getRouter());
     }
   }
 
