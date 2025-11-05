@@ -6,6 +6,7 @@ import type { Application } from "express";
 import express from "express";
 import { AppRoutes } from "./route";
 import { AuthContainer } from "./modules/auth/container";
+import { StationContainer } from "./modules/station/container";
 
 export class App {
   public app: Application;
@@ -14,6 +15,7 @@ export class App {
   private prisma: PrismaClient;
   private appRoutes!: AppRoutes;
   private authContainer!: AuthContainer;
+  private stationContainer!: StationContainer;
 
   constructor() {
     this.app = express();
@@ -21,6 +23,7 @@ export class App {
 
     this.prisma = new PrismaClient();
     this.authContainer = new AuthContainer(this.prisma);
+  this.stationContainer = new StationContainer(this.prisma);
 
     this.configureMiddleware();
     this.setupRoutes();
@@ -30,6 +33,8 @@ export class App {
     this.appRoutes = new AppRoutes(
       this.prisma,
       this.authContainer
+      ,
+      this.stationContainer
     );
 
     this.app.use("/api", this.appRoutes.getRouter());
