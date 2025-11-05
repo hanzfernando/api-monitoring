@@ -1,5 +1,5 @@
-import { config } from "./config/environment.ts";
-import { App } from "./app.ts";
+import { config } from "./config/environment";
+import { App } from "./app";
 
 // Log startup
 console.log("Starting Kloudtrack Server...");

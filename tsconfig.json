@@ -12,9 +12,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*", "src/modules/user/controller.ts"],
   "exclude": ["node_modules"]

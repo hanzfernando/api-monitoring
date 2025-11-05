@@ -1,25 +1,38 @@
 import { PrismaClient } from "@prisma/client";
-import logger from "./core/middlewares/logger.middleware.ts";
+import logger from "./core/middlewares/logger.middleware";
 import cors from "cors";
 import http from "http";
 import type { Application } from "express";
 import express from "express";
+import { AppRoutes } from "./route";
+import { AuthContainer } from "./modules/auth/container";
 
 export class App {
   public app: Application;
   public server: http.Server | null = null;
 
   private prisma: PrismaClient;
-  // private appRoutes!: AppRoutes;
+  private appRoutes!: AppRoutes;
+  private authContainer!: AuthContainer;
 
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
 
     this.prisma = new PrismaClient();
-    // this.appRoutes = new AppRoutes(this.prisma);
+    this.authContainer = new AuthContainer(this.prisma);
 
     this.configureMiddleware();
+    this.setupRoutes();
+  }
+
+  private setupRoutes(): void {
+    this.appRoutes = new AppRoutes(
+      this.prisma,
+      this.authContainer
+    );
+
+    this.app.use("/api", this.appRoutes.getRouter());
   }
 
   private configureMiddleware(): void {
