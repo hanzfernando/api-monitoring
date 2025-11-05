@@ -38,9 +38,8 @@ model ApiLog {
   endpoint    String
   method      String
   statusCode  Int
+  responseTime Float 
   userId      String?  
-  request     Json?
-  response    Json?
   createdAt   DateTime  @default(now())
 
   user        User?     @relation(fields: [userId], references: [id])

@@ -7,6 +7,7 @@ import express from "express";
 import { AppRoutes } from "./route";
 import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
+import { MonitorContainer } from "./modules/monitor/container";
 
 export class App {
   public app: Application;
@@ -16,6 +17,7 @@ export class App {
   private appRoutes!: AppRoutes;
   private authContainer!: AuthContainer;
   private stationContainer!: StationContainer;
+  private monitorContainer!: MonitorContainer;
 
   constructor() {
     this.app = express();
@@ -24,6 +26,7 @@ export class App {
     this.prisma = new PrismaClient();
     this.authContainer = new AuthContainer(this.prisma);
   this.stationContainer = new StationContainer(this.prisma);
+  this.monitorContainer = new MonitorContainer(this.prisma);
 
     this.configureMiddleware();
     this.setupRoutes();
@@ -34,7 +37,8 @@ export class App {
       this.prisma,
       this.authContainer
       ,
-      this.stationContainer
+      this.stationContainer,
+      this.monitorContainer
     );
 
     this.app.use("/api", this.appRoutes.getRouter());
@@ -54,6 +58,11 @@ export class App {
    
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+    // Register monitor middleware to record incoming requests and responses
+    if (this.monitorContainer && this.monitorContainer.middleware) {
+      this.app.use(this.monitorContainer.middleware);
+    }
 
     this.app.set("trust proxy", 1);
 

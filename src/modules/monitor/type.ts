@@ -4,7 +4,6 @@ export interface ApiLog {
    method: string;
    statusCode: number;
    userId?: string;
-   request?: any;
-   response?: any;
+   responseTime?: any;
    createdAt: Date;
 }
