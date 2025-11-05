@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { ApiLog } from "./type";
 
 export class MonitorRepository {
   private prisma: PrismaClient;
@@ -14,7 +15,21 @@ export class MonitorRepository {
     userId?: string | null;
     responseTime?: number | null;
   }) {
-    return this.prisma.apiLog.create({ data: log });
+    const data: any = {
+      endpoint: log.endpoint,
+      method: log.method,
+      statusCode: log.statusCode,
+    };
+
+    if (log.userId !== undefined && log.userId !== null) {
+      data.userId = log.userId;
+    }
+
+    if (log.responseTime !== undefined && log.responseTime !== null) {
+      data.responseTime = log.responseTime;
+    }
+
+    return await this.prisma.apiLog.create({ data });
   }
 
   async findAll(filter?: { userId?: string; endpoint?: string; statusCode?: number }) {
