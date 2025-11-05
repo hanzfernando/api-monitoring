@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// enum Role {
+//   USER
+//   ADMIN
+//   SUPERADMIN
+
+//   @@map("user_role_enum")
+// }
+
+
+model User {
+  id        String    @id @default(uuid())
+  name      String?
+  apiKey    String?   @unique
+  createdAt DateTime  @default(now())
+  apiLogs   ApiLog[]
+
+  @@map("users")
+}
+
+model ApiLog {
+  id          Int       @id @default(autoincrement())
+  endpoint    String
+  method      String
+  statusCode  Int
+  userId      String?  
+  request     Json?
+  response    Json?
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([endpoint])
+  @@index([statusCode])
+  @@index([userId])
+  @@map("api_logs")
+}
+
+model Station {
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String
+  createdAt DateTime @default(now())
+
+  @@map("stations")
+}
