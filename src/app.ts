@@ -8,6 +8,7 @@ import { AppRoutes } from "./route";
 import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
 import { MonitorContainer } from "./modules/monitor/container";
+import { ApiKeyContainer } from "./modules/apiKey/container";
 
 export class App {
   public app: Application;
@@ -18,6 +19,7 @@ export class App {
   private authContainer!: AuthContainer;
   private stationContainer!: StationContainer;
   private monitorContainer!: MonitorContainer;
+  private apiKeyContainer!: ApiKeyContainer;
 
   constructor() {
     this.app = express();
@@ -27,6 +29,7 @@ export class App {
     this.authContainer = new AuthContainer(this.prisma);
   this.stationContainer = new StationContainer(this.prisma);
   this.monitorContainer = new MonitorContainer(this.prisma);
+  this.apiKeyContainer = new ApiKeyContainer(this.prisma);
 
     this.configureMiddleware();
     this.setupRoutes();
@@ -35,10 +38,10 @@ export class App {
   private setupRoutes(): void {
     this.appRoutes = new AppRoutes(
       this.prisma,
-      this.authContainer
-      ,
+      this.authContainer,
       this.stationContainer,
-      this.monitorContainer
+      this.monitorContainer,
+      this.apiKeyContainer
     );
 
     this.app.use("/api", this.appRoutes.getRouter());
