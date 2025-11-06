@@ -4,7 +4,7 @@ import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
 import { MonitorContainer } from "./modules/monitor/container";
 import { ApiKeyContainer } from "./modules/apiKey/container";
-import { eitherAuth } from "./core/middlewares/compositeAuth.middleware";
+import { eitherAuth } from "./middleware/compositeAuth.middleware";
 
 export class AppRoutes {
   private router: Router;

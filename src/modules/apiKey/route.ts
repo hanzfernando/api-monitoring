@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ApiKeyController } from "./controller";
-import { protect } from "../../core/middlewares/auth.middleware";
+import { protect } from "../../middleware/auth.jwt.middleware";
 
 export class ApiKeyRoutes {
   private router: Router;

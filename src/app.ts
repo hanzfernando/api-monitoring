@@ -8,6 +8,7 @@ import { AppRoutes } from "./route";
 import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
 import { MonitorContainer } from "./modules/monitor/container";
+import monitorMiddleware from "./middleware/monitor.middleware";
 import { ApiKeyContainer } from "./modules/apiKey/container";
 
 export class App {
@@ -67,9 +68,8 @@ export class App {
     //   this.app.use(this.monitorContainer.middleware);
     // }
 
-    if(this.monitorContainer && this.monitorContainer.apiKeyMiddleware) {
-      this.app.use(this.monitorContainer.apiKeyMiddleware);
-    }
+    // Global request monitor (records method, path, status, response time, userId if present)
+    this.app.use(monitorMiddleware);
 
     this.app.set("trust proxy", 1);
 

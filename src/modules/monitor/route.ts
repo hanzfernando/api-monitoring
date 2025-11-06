@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { MonitorController } from "./controller";
-import { protect } from "../../core/middlewares/auth.middleware";
+import { protect } from "../../middleware/auth.jwt.middleware";
 
 export class MonitorRoutes {
   private router: Router;

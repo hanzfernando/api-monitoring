@@ -14,8 +14,8 @@ export class ApiKeyController {
       const user = (req as any).user;
       if (!user) return res.status(401).json({ error: "Unauthorized" });
 
-  const apiKey = await this.service.create(user.id);
-  return res.status(201).json(apiKey as ApiKey);
+      const apiKey = await this.service.create(user.id);
+      return res.status(201).json(apiKey as ApiKey);
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
     }

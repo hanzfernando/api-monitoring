@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { StationController } from "./controller";
-import { eitherAuth } from "../../core/middlewares/compositeAuth.middleware";
+import { eitherAuth } from "../../middleware/compositeAuth.middleware";
 
 export class StationRoutes {
   private router: Router;

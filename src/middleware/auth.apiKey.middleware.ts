@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../../config/database.config";
+import { prisma } from "../config/database.config";
 
-// Small AppError class to mirror the auth middleware pattern
 class AppError extends Error {
   constructor(public message: string, public statusCode: number) {
     super(message);
@@ -9,11 +8,6 @@ class AppError extends Error {
   }
 }
 
-/**
- * ApiKey authentication middleware class
- * - static `protect` mirrors the `AuthMiddleware.protect` pattern
- * - reads header `x-kloudtrack-key`, validates key, checks expiry, attaches req.user
- */
 export class ApiKeyMiddleware {
   static protect = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -47,13 +41,20 @@ export class ApiKeyMiddleware {
         }
       }
 
-      // attach user and apiKey info to request
-      (req as any).user = {
+      // attach user and apiKey info to request (keep minimal responsibilities)
+      req.user = {
         id: record.user.id,
         name: record.user.name ?? null,
-      };
-      (req as any).apiKey = { id: record.id, key: record.key };
+        ...(record.user as any),
+      } as any;
 
+      req.apiKey = {
+        id: String(record.id),
+        key: record.key,
+        scopes: (record as any).scopes ?? [],
+      };
+
+      // DO NOT set req.auth here — leave that to the auth pipeline that centralizes the context
       return next();
     } catch (err: any) {
       // eslint-disable-next-line no-console
@@ -64,5 +65,4 @@ export class ApiKeyMiddleware {
 }
 
 export const apiKeyProtect = ApiKeyMiddleware.protect;
-
 export default ApiKeyMiddleware;
