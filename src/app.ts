@@ -107,9 +107,17 @@ export class App {
 
   public async stop(): Promise<void> {
     try {
-      
-      this.server!.close();
+      // Close the HTTP server and wait until it's fully closed. Wrap in a Promise
+      if (this.server) {
+        await new Promise<void>((resolve, reject) => {
+          this.server!.close((err?: Error) => {
+            if (err) return reject(err);
+            resolve();
+          });
+        });
+      }
 
+      // Disconnect prisma client
       await this.prisma.$disconnect();
       console.log("Disconnected from database");
     } catch (error) {

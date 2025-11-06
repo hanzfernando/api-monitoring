@@ -23,7 +23,8 @@ export class ApiKeyService {
     this.repository = repository;
   }
 
-  async create(userId: string) {
+  // expiresAt may be a Date, null (explicitly no expiration), or undefined (no input provided)
+  async create(userId: string, expiresAt?: Date | null) {
     if (!userId) throw new Error("userId required");
 
     // generate unique key - retry on collision
@@ -31,7 +32,9 @@ export class ApiKeyService {
       const key = generateApiKey();
       const exists = await this.repository.findByKey(key);
       if (!exists) {
-        return this.repository.create({ key, userId }) as unknown as ApiKey;
+        // build payload: only include expiresAt if caller provided it (undefined means omit)
+        const payload = expiresAt === undefined ? { key, userId } : { key, userId, expiresAt };
+        return (await this.repository.create(payload as any)) as unknown as ApiKey;
       }
     }
 

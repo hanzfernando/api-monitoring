@@ -8,7 +8,11 @@ export class ApiKeyRepository {
   }
 
   async create(data: { key: string; userId: string }) {
-    return this.prisma.apiKey.create({ data });
+    // allow optional expiresAt in data
+    const { key, userId, expiresAt } = data as { key: string; userId: string; expiresAt?: Date | null };
+    const createData: any = { key, userId };
+    if (expiresAt !== undefined) createData.expiresAt = expiresAt;
+    return this.prisma.apiKey.create({ data: createData });
   }
 
   async findAll(filter?: { userId?: string }) {

@@ -13,8 +13,23 @@ export class ApiKeyController {
     try {
       const user = (req as any).user;
       if (!user) return res.status(401).json({ error: "Unauthorized" });
+      // allow optional expiresAt input in the request body
+      const { expiresAt } = (req.body ?? {}) as { expiresAt?: string | null };
 
-      const apiKey = await this.service.create(user.id);
+      let expiresAtDate: Date | null | undefined = undefined;
+      if (expiresAt !== undefined) {
+        if (expiresAt === null) {
+          expiresAtDate = null;
+        } else {
+          const parsed = new Date(expiresAt);
+          if (Number.isNaN(parsed.getTime())) {
+            return res.status(400).json({ error: "invalid expiresAt" });
+          }
+          expiresAtDate = parsed;
+        }
+      }
+
+      const apiKey = await this.service.create(user.id, expiresAtDate);
       return res.status(201).json(apiKey as ApiKey);
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
@@ -26,8 +41,8 @@ export class ApiKeyController {
       const user = (req as any).user;
       // default to returning only keys for the authenticated user
       const userId = user ? user.id : undefined;
-  const keys = await this.service.list(userId);
-  return res.status(200).json(keys as ApiKey[]);
+      const keys = await this.service.list(userId);
+      return res.status(200).json(keys as ApiKey[]);
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
     }
