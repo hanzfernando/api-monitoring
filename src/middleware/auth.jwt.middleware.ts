@@ -3,7 +3,6 @@
  * Provides both static methods and instance methods for flexibility
  */
 import type { Request, Response, NextFunction } from "express";
-import type { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { config } from "../config/environment";
 import { prisma } from "../config/database.config";
@@ -20,7 +19,7 @@ declare global {
 
     interface Request {
       auth?: {
-        type: "apikey" | "jwt" | "none";
+        type: "apiKey" | "jwt" | "none";
         credentialId?: string | null;
         source?: "header" | "cookie" | "unknown";
         scopes?: string[];

@@ -7,7 +7,7 @@ export function monitorMiddleware(req: Request, res: Response, next: NextFunctio
 
   res.on("finish", async () => {
     try {
-      if (req.auth?.type !== "apikey") return;
+      if (req.auth?.type !== "apiKey") return;
 
       const statusCode = res.statusCode;
       const endpoint = req.originalUrl || req.url;

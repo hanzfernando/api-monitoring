@@ -27,7 +27,7 @@ function attachAuthContext(req: Request, provider: "apiKey" | "jwt") {
   }
 
   req.auth = {
-    type: provider === "apiKey" ? "apikey" : "jwt",
+    type: provider === "apiKey" ? "apiKey" : "jwt",
     credentialId: provider === "apiKey" ? req.apiKey?.id ?? null : req.user?.id ?? null,
     source: provider === "apiKey" ? "header" : "cookie",
     scopes: req.apiKey?.scopes ?? req.user?.scopes ?? [],
@@ -36,8 +36,7 @@ function attachAuthContext(req: Request, provider: "apiKey" | "jwt") {
 
 function setAuthContext(req: Request, type: "apiKey" | "jwt", user: any, credentialId: string | number, scopes: string[] = []) {
   req.user = user;
-  // normalize to lowercase 'apikey' to match Request typing in auth.jwt.middleware.ts
-  req.auth = { type: type === "apiKey" ? "apikey" : "jwt", credentialId: credentialId != null ? String(credentialId) : null, scopes } as any;
+  req.auth = { type: type === "apiKey" ? "apiKey" : "jwt", credentialId: credentialId != null ? String(credentialId) : null, scopes } as any;
 }
 
 export async function eitherAuth(req: Request, res: Response, next: NextFunction) {
