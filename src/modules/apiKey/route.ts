@@ -1,18 +1,19 @@
 import { Router } from "express";
-import { MonitorController } from "./controller";
+import { ApiKeyController } from "./controller";
 import { protect } from "../../middleware/auth.jwt.middleware";
 
-export class MonitorRoutes {
+export class ApiKeyRoutes {
   private router: Router;
-  private controller: MonitorController;
+  private controller: ApiKeyController;
 
-  constructor(controller: MonitorController) {
+  constructor(controller: ApiKeyController) {
     this.router = Router();
     this.controller = controller;
     this.initializeRoutes();
   }
 
   private initializeRoutes(): void {
+    this.router.post("/", this.controller.create.bind(this.controller));
     this.router.get("/", this.controller.list.bind(this.controller));
     this.router.get("/:id", this.controller.get.bind(this.controller));
     this.router.delete("/:id", this.controller.remove.bind(this.controller));

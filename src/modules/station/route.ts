@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { StationController } from "./controller";
+import { eitherAuth } from "../../middleware/compositeAuth.middleware";
 
 export class StationRoutes {
   private router: Router;
@@ -12,11 +13,11 @@ export class StationRoutes {
   }
 
   private initializeRoutes(): void {
-    this.router.post("/", this.controller.create.bind(this.controller));
-    this.router.get("/", this.controller.list.bind(this.controller));
-    this.router.get("/:id", this.controller.get.bind(this.controller));
-    this.router.put("/:id", this.controller.update.bind(this.controller));
-    this.router.delete("/:id", this.controller.remove.bind(this.controller));
+  this.router.post("/", eitherAuth, this.controller.create.bind(this.controller));
+  this.router.get("/", eitherAuth, this.controller.list.bind(this.controller));
+  this.router.get("/:id", eitherAuth, this.controller.get.bind(this.controller));
+  this.router.put("/:id", eitherAuth, this.controller.update.bind(this.controller));
+  this.router.delete("/:id", eitherAuth, this.controller.remove.bind(this.controller));
   }
 
   public getRouter() {

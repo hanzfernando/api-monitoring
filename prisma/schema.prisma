@@ -29,8 +29,21 @@ model User {
   password  String?
   createdAt DateTime  @default(now())
   apiLogs   ApiLog[]
+  apiKeys   ApiKey[]
 
   @@map("users")
+}
+
+model ApiKey {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("api_keys")
 }
 
 model ApiLog {

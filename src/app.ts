@@ -8,6 +8,8 @@ import { AppRoutes } from "./route";
 import { AuthContainer } from "./modules/auth/container";
 import { StationContainer } from "./modules/station/container";
 import { MonitorContainer } from "./modules/monitor/container";
+import monitorMiddleware from "./middleware/monitor.middleware";
+import { ApiKeyContainer } from "./modules/apiKey/container";
 
 export class App {
   public app: Application;
@@ -18,6 +20,7 @@ export class App {
   private authContainer!: AuthContainer;
   private stationContainer!: StationContainer;
   private monitorContainer!: MonitorContainer;
+  private apiKeyContainer!: ApiKeyContainer;
 
   constructor() {
     this.app = express();
@@ -27,6 +30,7 @@ export class App {
     this.authContainer = new AuthContainer(this.prisma);
   this.stationContainer = new StationContainer(this.prisma);
   this.monitorContainer = new MonitorContainer(this.prisma);
+  this.apiKeyContainer = new ApiKeyContainer(this.prisma);
 
     this.configureMiddleware();
     this.setupRoutes();
@@ -35,10 +39,10 @@ export class App {
   private setupRoutes(): void {
     this.appRoutes = new AppRoutes(
       this.prisma,
-      this.authContainer
-      ,
+      this.authContainer,
       this.stationContainer,
-      this.monitorContainer
+      this.monitorContainer,
+      this.apiKeyContainer
     );
 
     this.app.use("/api", this.appRoutes.getRouter());
@@ -60,9 +64,12 @@ export class App {
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
     // Register monitor middleware to record incoming requests and responses
-    if (this.monitorContainer && this.monitorContainer.middleware) {
-      this.app.use(this.monitorContainer.middleware);
-    }
+    // if (this.monitorContainer && this.monitorContainer.middleware) {
+    //   this.app.use(this.monitorContainer.middleware);
+    // }
+
+    // Global request monitor (records method, path, status, response time, userId if present)
+    this.app.use(monitorMiddleware);
 
     this.app.set("trust proxy", 1);
 
@@ -100,9 +107,17 @@ export class App {
 
   public async stop(): Promise<void> {
     try {
-      
-      this.server!.close();
+      // Close the HTTP server and wait until it's fully closed. Wrap in a Promise
+      if (this.server) {
+        await new Promise<void>((resolve, reject) => {
+          this.server!.close((err?: Error) => {
+            if (err) return reject(err);
+            resolve();
+          });
+        });
+      }
 
+      // Disconnect prisma client
       await this.prisma.$disconnect();
       console.log("Disconnected from database");
     } catch (error) {
