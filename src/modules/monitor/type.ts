@@ -1,9 +1,11 @@
 export interface ApiLog {
-   id: string;
+   id: number;
+   apiKeyId?: number | null;
+   apiKeyValue: string;
    endpoint: string;
    method: string;
    statusCode: number;
    userId?: string;
-   responseTime?: any;
+   responseTime?: number | null;
    createdAt: Date;
 }

@@ -9,6 +9,6 @@ export const config = {
 
   cookie: process.env.COOKIE_NAME || "API_MONITORING_COOKIE_JWT",
   jwt: {
-    secret: process.env.JWT_SECRET!, 
+    secret: process.env.JWT_SECRET! || "QWEasd123!@#",
   },
 };

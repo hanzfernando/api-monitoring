@@ -14,11 +14,14 @@ export class MonitorRepository {
     statusCode: number;
     userId?: string | null;
     responseTime?: number | null;
+    apiKeyId?: number | null;
+    apiKeyValue?: string | null;
   }) {
     const data: any = {
       endpoint: log.endpoint,
       method: log.method,
       statusCode: log.statusCode,
+      apiKeyValue: log.apiKeyValue ?? "",
     };
 
     if (log.userId !== undefined && log.userId !== null) {
@@ -27,6 +30,10 @@ export class MonitorRepository {
 
     if (log.responseTime !== undefined && log.responseTime !== null) {
       data.responseTime = log.responseTime;
+    }
+
+    if (log.apiKeyId !== undefined && log.apiKeyId !== null) {
+      data.apiKeyId = log.apiKeyId;
     }
 
     return await this.prisma.apiLog.create({ data });

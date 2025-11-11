@@ -21,9 +21,14 @@ export function monitorMiddleware(req: Request, res: Response, next: NextFunctio
         method,
         statusCode,
         responseTime,
+        apiKeyValue: req.apiKey?.key ?? "",
       };
 
       if (userId) data.userId = String(userId);
+      if (req.apiKey?.id !== undefined && req.apiKey?.id !== null) {
+        const parsed = Number(req.apiKey.id);
+        if (!Number.isNaN(parsed)) data.apiKeyId = parsed;
+      }
 
       await prisma.apiLog.create({ data });
     } catch (err: any) {

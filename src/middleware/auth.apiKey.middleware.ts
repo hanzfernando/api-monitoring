@@ -32,6 +32,11 @@ export class ApiKeyMiddleware {
         return next(new AppError("Invalid API key", 401));
       }
 
+      // ensure key is active
+      if ((record as any).isActive === false) {
+        return next(new AppError("API key disabled", 401));
+      }
+
       // check expiry if present
       const expiresAt = (record as any).expiresAt;
       if (expiresAt) {
