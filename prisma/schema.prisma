@@ -35,19 +35,24 @@ model User {
 }
 
 model ApiKey {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique
-  userId    String
-  createdAt DateTime @default(now())
-  expiresAt DateTime?
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  userId      String
+  isActive    Boolean    @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
 
-  user      User     @relation(fields: [userId], references: [id])
-
+  user        User     @relation(fields: [userId], references: [id])
+  logs        ApiLog[]
+  
   @@map("api_keys")
 }
 
 model ApiLog {
   id          Int       @id @default(autoincrement())
+  apiKeyId    Int?
+  apiKeyValue String
   endpoint    String
   method      String
   statusCode  Int
@@ -56,6 +61,7 @@ model ApiLog {
   createdAt   DateTime  @default(now())
 
   user        User?     @relation(fields: [userId], references: [id])
+  apiKey      ApiKey?    @relation(fields: [apiKeyId], references: [id])
 
   @@index([endpoint])
   @@index([statusCode])
