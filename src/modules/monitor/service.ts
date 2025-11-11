@@ -21,6 +21,10 @@ export class MonitorService {
     return this.repository.findAll(filter);
   }
 
+  async listByApiKeyId(apiKeyId: number, userId: string) {
+    return this.repository.findByApiKeyId(apiKeyId, userId);
+  }
+
   async get(id: number) {
     const log = await this.repository.findById(id);
     if (!log) throw new Error("Log not found");

@@ -53,6 +53,19 @@ export class MonitorRepository {
     return this.prisma.apiLog.findUnique({ where: { id } });
   }
 
+  async findByApiKeyId(apiKeyId: number, userId: string) {
+    // return logs for an apiKeyId but ensure ownership: either the log.userId matches
+    // or the related apiKey belongs to the same user.
+    const where: any = { apiKeyId };
+    where.AND = [
+      {
+        OR: [{ userId: userId }, { apiKey: { userId: userId } }],
+      },
+    ];
+
+    return this.prisma.apiLog.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+
   async delete(id: number) {
     return this.prisma.apiLog.delete({ where: { id } });
   }
