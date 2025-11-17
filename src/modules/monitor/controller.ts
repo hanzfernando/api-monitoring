@@ -148,4 +148,56 @@ export class MonitorController {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
     }
   }
+
+  async getCombinedHistory(req: Request, res: Response) {
+    try {
+      const apiKeyId = Number(req.params.apiKeyId);
+      if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
+      const { since, interval } = req.query as any;
+      const allowedPeriods = ["pastHour", "pastDay", "past7Days", "pastWeek", "pastMonth"];
+      if (!since) return res.status(400).json({ error: "invalid since parameter" });
+      const sinceStr = String(since);
+      const isPeriod = allowedPeriods.includes(sinceStr);
+      const parsedDate = new Date(sinceStr);
+      const isValidDate = !isNaN(parsedDate.getTime());
+      if (!isPeriod && !isValidDate) {
+        return res.status(400).json({ error: "invalid since parameter" });
+      }
+      if (interval !== "hourly" && interval !== "daily") {
+        return res.status(400).json({ error: "invalid interval parameter" });
+      }
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+      const sinceParam = isPeriod ? sinceStr : parsedDate;
+      const history = await this.service.getCombinedHistory(apiKeyId, sinceParam as any, interval);
+      return res.status(200).json(history);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
+
+  async getCombinedHistoryForUser(req: Request, res: Response) {
+    try {
+      const { since, interval } = req.query as any;
+      const allowedPeriods = ["pastHour", "pastDay", "past7Days", "pastWeek", "pastMonth"];
+      if (!since) return res.status(400).json({ error: "invalid since parameter" });
+      const sinceStr = String(since);
+      const isPeriod = allowedPeriods.includes(sinceStr);
+      const parsedDate = new Date(sinceStr);
+      const isValidDate = !isNaN(parsedDate.getTime());
+      if (!isPeriod && !isValidDate) {
+        return res.status(400).json({ error: "invalid since parameter" });
+      }
+      if (interval !== "hourly" && interval !== "daily") {
+        return res.status(400).json({ error: "invalid interval parameter" });
+      }
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+      const sinceParam = isPeriod ? sinceStr : parsedDate;
+      const history = await this.service.getCombinedHistoryForUser(String(authUser.id), sinceParam as any, interval);
+      return res.status(200).json(history);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
 }
