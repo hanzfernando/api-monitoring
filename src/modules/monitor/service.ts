@@ -62,4 +62,20 @@ export class MonitorService {
   ) {
     return this.repository.getResponseHistory(apiKeyId, since as any, interval);
   }
+
+  async getCombinedHistory(
+    apiKeyId: number,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: "hourly" | "daily"
+  ) {
+    return this.repository.getCombinedHistory(apiKeyId, since as any, interval);
+  }
+
+  async getCombinedHistoryForUser(
+    userId: string,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: "hourly" | "daily"
+  ) {
+    return this.repository.getCombinedHistoryForUser(userId, since as any, interval);
+  }
 }

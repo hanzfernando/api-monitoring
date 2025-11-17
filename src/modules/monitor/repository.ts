@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { ApiLog, ApiLogRequestHistory, ApiLogResponseTimeHistory } from "./type";
+import { ApiLog, ApiLogRequestHistory, ApiLogResponseTimeHistory, ApiLogCombinedHistory, ApiLogUserCombinedHistory } from "./type";
 
 export class MonitorRepository {
   private prisma: PrismaClient;
@@ -259,6 +259,161 @@ export class MonitorRepository {
       apiKeyValue: r.api_key_value ?? '',
       dateTime: new Date(Number(r.epoch) * 1000),
       averageResponseTime: r.avg_response_time !== null ? Math.round(Number(r.avg_response_time) * 100) / 100 : 0,
+    }));
+  }
+
+  async getCombinedHistory(
+    apiKeyId: number,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: 'hourly' | 'daily'
+  ): Promise<ApiLogCombinedHistory[]> {
+    const now = Date.now();
+    const computeSince = (s: Date | string): Date => {
+      if (s instanceof Date) return s;
+      switch (s) {
+        case 'pastHour':
+          return new Date(now - 1 * 60 * 60 * 1000);
+        case 'pastDay':
+          return new Date(now - 24 * 60 * 60 * 1000);
+        case 'past7Days':
+        case 'pastWeek':
+          return new Date(now - 7 * 24 * 60 * 60 * 1000);
+        case 'pastMonth':
+          return new Date(now - 30 * 24 * 60 * 60 * 1000);
+        default:
+          return new Date(now - 7 * 24 * 60 * 60 * 1000);
+      }
+    };
+
+    const sinceDate = computeSince(since as Date | string);
+    return this.getCombinedHistoryRaw(apiKeyId, sinceDate, interval);
+  }
+
+  async getCombinedHistoryRaw(
+    apiKeyId: number,
+    since: Date,
+    interval: 'hourly' | 'daily'
+  ): Promise<ApiLogCombinedHistory[]> {
+    const sinceIso = since.toISOString();
+    const bucketSeconds = interval === 'hourly' ? 60 * 60 : 24 * 60 * 60;
+
+    const sql = `
+      SELECT
+        s.epoch as epoch,
+        COALESCE(a.min_id, 0) AS id,
+        COALESCE(a.request_count, 0) AS request_count,
+        COALESCE(a.avg_response_time, NULL) AS avg_response_time,
+        COALESCE(a.api_key_value, k.key, '') AS api_key_value
+      FROM generate_series(
+            floor(extract(epoch from '${sinceIso}'::timestamptz)/${bucketSeconds})*${bucketSeconds},
+            floor(extract(epoch from now())/${bucketSeconds})*${bucketSeconds},
+            ${bucketSeconds}
+          ) AS s(epoch)
+      LEFT JOIN (
+        SELECT
+          floor(extract(epoch from "createdAt")/${bucketSeconds})*${bucketSeconds} AS epoch,
+          COUNT(*) AS request_count,
+          MIN(id) AS min_id,
+          AVG("responseTime") AS avg_response_time,
+          MAX("apiKeyValue") AS api_key_value
+        FROM api_logs
+        WHERE "apiKeyId" = ${apiKeyId}
+          AND "createdAt" >= '${sinceIso}'::timestamptz
+        GROUP BY epoch
+      ) a ON a.epoch = s.epoch
+      LEFT JOIN api_keys k ON k.id = ${apiKeyId}
+      ORDER BY s.epoch ASC;
+    `;
+
+    const rows: Array<{
+      epoch: string | number;
+      id: string | number;
+      request_count: string | number;
+      avg_response_time: string | number | null;
+      api_key_value: string;
+    }> = await this.prisma.$queryRawUnsafe(sql);
+
+    return rows.map((r) => ({
+      id: Number(r.id) || 0,
+      apiKeyId,
+      apiKeyValue: r.api_key_value ?? '',
+      dateTime: new Date(Number(r.epoch) * 1000),
+      requestCount: Number(r.request_count) || 0,
+      averageResponseTime: r.avg_response_time !== null ? Number(r.avg_response_time) : 0,
+    }));
+  }
+
+  // Combined across all active API keys for a given user
+  async getCombinedHistoryForUser(
+    userId: string,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: 'hourly' | 'daily'
+  ): Promise<ApiLogUserCombinedHistory[]> {
+    const now = Date.now();
+    const computeSince = (s: Date | string): Date => {
+      if (s instanceof Date) return s;
+      switch (s) {
+        case 'pastHour':
+          return new Date(now - 1 * 60 * 60 * 1000);
+        case 'pastDay':
+          return new Date(now - 24 * 60 * 60 * 1000);
+        case 'past7Days':
+        case 'pastWeek':
+          return new Date(now - 7 * 24 * 60 * 60 * 1000);
+        case 'pastMonth':
+          return new Date(now - 30 * 24 * 60 * 60 * 1000);
+        default:
+          return new Date(now - 7 * 24 * 60 * 60 * 1000);
+      }
+    };
+
+    const sinceDate = computeSince(since as Date | string);
+    return this.getCombinedHistoryForUserRaw(userId, sinceDate, interval);
+  }
+
+  async getCombinedHistoryForUserRaw(
+    userId: string,
+    since: Date,
+    interval: 'hourly' | 'daily'
+  ): Promise<ApiLogUserCombinedHistory[]> {
+    const sinceIso = since.toISOString();
+    const bucketSeconds = interval === 'hourly' ? 60 * 60 : 24 * 60 * 60;
+
+    const sql = `
+      SELECT
+        s.epoch as epoch,
+        COALESCE(a.request_count, 0) AS request_count,
+        COALESCE(a.avg_response_time, NULL) AS avg_response_time
+      FROM generate_series(
+            floor(extract(epoch from '${sinceIso}'::timestamptz)/${bucketSeconds})*${bucketSeconds},
+            floor(extract(epoch from now())/${bucketSeconds})*${bucketSeconds},
+            ${bucketSeconds}
+          ) AS s(epoch)
+      LEFT JOIN (
+        SELECT
+          floor(extract(epoch from l."createdAt")/${bucketSeconds})*${bucketSeconds} AS epoch,
+          COUNT(*) AS request_count,
+          AVG(l."responseTime") AS avg_response_time
+        FROM api_logs l
+        JOIN api_keys k ON l."apiKeyId" = k.id
+        WHERE k."userId" = '${userId}'
+          AND k."isActive" = true
+          AND l."createdAt" >= '${sinceIso}'::timestamptz
+        GROUP BY epoch
+      ) a ON a.epoch = s.epoch
+      ORDER BY s.epoch ASC;
+    `;
+
+    const rows: Array<{
+      epoch: string | number;
+      request_count: string | number;
+      avg_response_time: string | number | null;
+    }> = await this.prisma.$queryRawUnsafe(sql);
+
+    return rows.map((r) => ({
+      dateTime: new Date(Number(r.epoch) * 1000),
+      requestCount: Number(r.request_count) || 0,
+      averageResponseTime: r.avg_response_time !== null ? Math.round(Number(r.avg_response_time) * 100) / 100 : null,
     }));
   }
 }

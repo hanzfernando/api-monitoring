@@ -25,3 +25,18 @@ export interface ApiLogResponseTimeHistory {
   dateTime: Date;
   averageResponseTime: number;
 }
+
+export interface ApiLogCombinedHistory {
+  id: number;
+  apiKeyId: number;
+  apiKeyValue: string;
+  dateTime: Date;
+  requestCount: number;
+  averageResponseTime: number;
+}
+
+export interface ApiLogUserCombinedHistory {
+  dateTime: Date;
+  requestCount: number;
+  averageResponseTime: number | null;
+}
