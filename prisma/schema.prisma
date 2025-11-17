@@ -22,12 +22,11 @@ datasource db {
 //   @@map("user_role_enum")
 // }
 
-
 model User {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String?
   password  String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
   apiLogs   ApiLog[]
   apiKeys   ApiKey[]
 
@@ -35,33 +34,33 @@ model User {
 }
 
 model ApiKey {
-  id          Int      @id @default(autoincrement())
-  key         String   @unique
-  userId      String
-  isActive    Boolean    @default(true)
-  deletedAt   DateTime?
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime?
+  id        Int       @id @default(autoincrement())
+  key       String    @unique
+  userId    String
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
 
-  user        User     @relation(fields: [userId], references: [id])
-  logs        ApiLog[]
-  
+  user User     @relation(fields: [userId], references: [id])
+  logs ApiLog[]
+
   @@map("api_keys")
 }
 
 model ApiLog {
-  id          Int       @id @default(autoincrement())
-  apiKeyId    Int?
-  apiKeyValue String
-  endpoint    String
-  method      String
-  statusCode  Int
-  responseTime Float 
-  userId      String?  
-  createdAt   DateTime  @default(now())
+  id           Int      @id @default(autoincrement())
+  apiKeyId     Int?
+  apiKeyValue  String
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Float?
+  userId       String?
+  createdAt    DateTime @default(now())
 
-  user        User?     @relation(fields: [userId], references: [id])
-  apiKey      ApiKey?    @relation(fields: [apiKeyId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id])
 
   @@index([endpoint])
   @@index([statusCode])

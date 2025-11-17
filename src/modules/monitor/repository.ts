@@ -69,4 +69,21 @@ export class MonitorRepository {
   async delete(id: number) {
     return this.prisma.apiLog.delete({ where: { id } });
   }
+
+  async getAverageResponseTime(apiKeyId: number): Promise<number> {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // last 24 hours
+
+    const result = await this.prisma.apiLog.aggregate({
+      where: {
+        apiKeyId,
+        createdAt: { gte: since },
+        NOT: ({ responseTime: null } as any),
+      },
+      _avg: { responseTime: true },
+    });
+
+    return Number(result._avg?.responseTime?.toFixed(2)) ?? 0;
+  }
+  
+
 }

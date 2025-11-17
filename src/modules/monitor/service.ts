@@ -35,4 +35,10 @@ export class MonitorService {
     await this.get(id);
     return this.repository.delete(id);
   }
+
+  async getAverageResponseTime(apiKeyId: number) {
+    const responseTimes = await this.repository.getAverageResponseTime(apiKeyId);
+    return responseTimes;
+    
+  }
 }

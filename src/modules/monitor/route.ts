@@ -15,7 +15,8 @@ export class MonitorRoutes {
   private initializeRoutes(): void {
     this.router.get("/", protect, this.controller.list.bind(this.controller));
     this.router.get("/:apiKeyId", protect, this.controller.listByApiKeyId.bind(this.controller));
-    this.router.delete("/:apiKeyId", protect, this.controller.remove.bind(this.controller));
+    this.router.get("/:apiKeyId/average-response-time", protect, this.controller.getAverageResponseTime.bind(this.controller));
+    // this.router.delete("/:apiKeyId", protect, this.controller.remove.bind(this.controller));
   }
 
   public getRouter() {

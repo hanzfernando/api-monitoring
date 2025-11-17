@@ -28,7 +28,6 @@ export class MonitorController {
 
   async listByApiKeyId(req: Request, res: Response) {
     try {
-      // Treat the route param as an apiKeyId and return the logs for that api key,
       // scoped to the authenticated user.
       const apiKeyId = Number(req.params.apiKeyId);
       if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
@@ -60,6 +59,21 @@ export class MonitorController {
 
       await this.service.remove(id);
       return res.status(200).json({ message: "deleted" });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
+
+  async getAverageResponseTime(req: Request, res: Response) {
+    try {
+      const apiKeyId = Number(req.params.apiKeyId);
+      if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
+
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+
+      const averageResponseTime = await this.service.getAverageResponseTime(apiKeyId);
+      return res.status(200).json({ averageResponseTime });
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
     }
