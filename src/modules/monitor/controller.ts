@@ -78,4 +78,74 @@ export class MonitorController {
       return res.status(500).json({ error: err.message ?? "Internal Server Error" });
     }
   }
+
+  async getPastHourRequestCount(req: Request, res: Response) {
+    try {
+      const apiKeyId = Number(req.params.apiKeyId);
+      if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
+
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+
+      const count = await this.service.getPastHourRequestCount(apiKeyId);
+      return res.status(200).json({ count });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
+
+  async getRequestHistory(req: Request, res: Response) {
+    try {
+      const apiKeyId = Number(req.params.apiKeyId);
+      if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
+      const { since, interval } = req.query as any;
+      // allow period strings like 'pastHour','pastDay','past7Days' OR an ISO date string
+      const allowedPeriods = ["pastHour", "pastDay", "past7Days", "pastWeek", "pastMonth"];
+      if (!since) return res.status(400).json({ error: "invalid since parameter" });
+      const sinceStr = String(since);
+      const isPeriod = allowedPeriods.includes(sinceStr);
+      const parsedDate = new Date(sinceStr);
+      const isValidDate = !isNaN(parsedDate.getTime());
+      if (!isPeriod && !isValidDate) {
+        return res.status(400).json({ error: "invalid since parameter" });
+      }
+      if (interval !== "hourly" && interval !== "daily") {
+        return res.status(400).json({ error: "invalid interval parameter" });
+      }
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+      const sinceParam = isPeriod ? sinceStr : parsedDate;
+      const history = await this.service.getRequestHistory(apiKeyId, sinceParam as any, interval);
+      return res.status(200).json(history);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
+
+  async getResponseHistory(req: Request, res: Response) {
+    try {
+      const apiKeyId = Number(req.params.apiKeyId);
+      if (Number.isNaN(apiKeyId)) return res.status(400).json({ error: "invalid apiKeyId" });
+      const { since, interval } = req.query as any;
+      const allowedPeriods = ["pastHour", "pastDay", "past7Days", "pastWeek", "pastMonth"];
+      if (!since) return res.status(400).json({ error: "invalid since parameter" });
+      const sinceStr = String(since);
+      const isPeriod = allowedPeriods.includes(sinceStr);
+      const parsedDate = new Date(sinceStr);
+      const isValidDate = !isNaN(parsedDate.getTime());
+      if (!isPeriod && !isValidDate) {
+        return res.status(400).json({ error: "invalid since parameter" });
+      }
+      if (interval !== "hourly" && interval !== "daily") {
+        return res.status(400).json({ error: "invalid interval parameter" });
+      }
+      const authUser = (req as any).user;
+      if (!authUser || !authUser.id) return res.status(401).json({ error: "Unauthorized" });
+      const sinceParam = isPeriod ? sinceStr : parsedDate;
+      const history = await this.service.getResponseHistory(apiKeyId, sinceParam as any, interval);
+      return res.status(200).json(history);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Internal Server Error" });
+    }
+  }
 }

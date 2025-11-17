@@ -9,3 +9,19 @@ export interface ApiLog {
    responseTime?: number | null;
    createdAt: Date;
 }
+
+export interface ApiLogRequestHistory {
+  id: number;
+  apiKeyId: number;
+  apiKeyValue: string;
+  dateTime: Date;
+  requestCount: number;
+}
+
+export interface ApiLogResponseTimeHistory {
+  id: number;
+  apiKeyId: number;
+  apiKeyValue: string;
+  dateTime: Date;
+  averageResponseTime: number;
+}

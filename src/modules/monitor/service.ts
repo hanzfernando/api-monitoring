@@ -39,6 +39,27 @@ export class MonitorService {
   async getAverageResponseTime(apiKeyId: number) {
     const responseTimes = await this.repository.getAverageResponseTime(apiKeyId);
     return responseTimes;
-    
+  }
+
+  async getPastHourRequestCount(apiKeyId: number) {
+    const count = await this.repository.getPastHourRequestCount(apiKeyId);
+    return count;
+  }
+
+  async getRequestHistory(
+    apiKeyId: number,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: "hourly" | "daily"
+  ) {
+    // delegate to repository.getRequestHistory which accepts both Date and period-strings
+    return this.repository.getRequestHistory(apiKeyId, since as any, interval);
+  }
+
+  async getResponseHistory(
+    apiKeyId: number,
+    since: Date | "pastHour" | "pastDay" | "past7Days" | "pastWeek" | "pastMonth",
+    interval: "hourly" | "daily"
+  ) {
+    return this.repository.getResponseHistory(apiKeyId, since as any, interval);
   }
 }
