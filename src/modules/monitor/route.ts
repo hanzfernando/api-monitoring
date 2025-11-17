@@ -21,7 +21,6 @@ export class MonitorRoutes {
     this.router.get("/:apiKeyId/request-history", protect, this.controller.getRequestHistory.bind(this.controller));
     this.router.get("/:apiKeyId/response-history", protect, this.controller.getResponseHistory.bind(this.controller));
     this.router.get("/:apiKeyId/combined-history", protect, this.controller.getCombinedHistory.bind(this.controller));
-    this.router.get("/combined-history", protect, this.controller.getCombinedHistoryForUser.bind(this.controller));
   }
 
   public getRouter() {
